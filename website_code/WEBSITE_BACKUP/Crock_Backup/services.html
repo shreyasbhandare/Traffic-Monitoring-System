@@ -1,0 +1,422 @@
+  <!-- SERVICES PAGE -->
+
+<html>
+
+<head>
+<h1 align="center">Traffic Monitoring Project</h1>
+
+
+</head>
+
+<body>
+<?php 
+
+
+function createarray($incidenttype)
+{
+	$servername = "localhost";
+	$username = "root";
+	$password = null;
+	$dbname = "trafficprediction";
+	
+	// Create connection
+	$conn = new mysqli($servername, $username, $password, $dbname);
+	// Check connection
+	if ($conn->connect_error) 
+	{
+		die("Connection failed: " . $conn->connect_error);
+	}
+	
+	if($incidenttype == "Accidents")
+	{
+		$tablename = "liveaccidents";
+	}
+	elseif($incidenttype == "Construction")
+	{
+		$tablename = "liveconstruction";
+	}
+	else
+	{
+		$tablename = "liveevents";
+	}
+	
+	
+	$sql = "SELECT `Latitude`,`Longitude`,`Description` FROM `" . $tablename . "` WHERE 1";
+	$result = $conn->query($sql);
+	
+	$i = 0;
+	$latitude = array();
+	$longitude = array();
+	$description = array();
+	
+	
+	if ($result->num_rows > 0) 
+	{
+		// output data of each row
+		while($row = $result->fetch_assoc())
+		{
+			$latitude[] = $row["Latitude"];
+			$longitude[] = $row["Longitude"];
+			$description[] = $row["Description"];
+		}
+	} else 
+	{
+		echo "0 results";
+	}
+
+	/*
+	for($x = 0; $x < count($latitude) ; $x++)
+	{
+	echo $latitude[$x];
+	echo "<br>";
+	echo $longitude[$x];
+	echo "<br>";
+	echo $description[$x];
+	echo "<br>";
+	}
+	*/
+	$conn->close();
+	
+	return [$latitude,$longitude,$description];
+
+}
+
+//Below array for accidents and congestion
+$latitude = array();
+$longitude = array();
+$description = array();
+list($latitude,$longitude,$description) = createarray("Accidents");
+
+//Below array for construction
+$conslatitude = array();
+$conslongitude = array();
+$consdescription = array();
+list($conslatitude,$conslongitude,$consdescription) = createarray("Construction");
+
+
+//Below array for construction
+$eventlatitude = array();
+$eventlongitude = array();
+$eventdescription = array();
+list($eventlatitude,$eventlongitude,$eventdescription) = createarray("Events");
+
+		
+?>
+
+  <title>Traffic Monitoring Project</title>
+  
+<!-- The following code uses bootstrap to make the website compatible with mobile phones as well -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  
+  <div class="container">
+  <!-- Creating a navigation tab to appear at the top of the screen as a part of template-->
+		<ul class="nav nav-tabs">
+		<li><a href="home.html">HOME</a></li>		
+		<li class="active"><a data-toggle="tab" href="services.html">SERVICES</a></li>
+		<li><a href="feedback.html">FEEDBACK</a></li>
+		<li><a href="aboutus.html">ABOUT US</a></li>
+		</ul>
+	
+<div class="tab-content">
+
+
+<div id="menu1" class="tab-pane fade in active">
+<h3>SERVICES</h3>
+<p>Welcome to the traffic monitoring website!<br>You are currently looking at the Traffic page. Click on Navigation to switch</p>
+
+<DIV style="position: absolute; top:225px; left:150px">
+<button onclick="window.location='services.html'">TRAFFIC</button>
+</div>
+<!-- Button to link to the Navigation service web page-->
+<DIV style="position: absolute; top:225px; left:250px">
+<button onclick="window.location='navigation.html'">NAVIGATION</button>
+</div>
+<!-- Buttons and text boxes that provide the functionality to plot the various markers on the map to view traffic incidents-->
+<DIV style="position: absolute; top:250px; left:100px">
+		<br>
+	  <input id="address" type="textbox" value="New Brunswick, NJ">
+	  <br><br>
+      <input id="submit" type="button" value="Geocode">
+      <input id="Accidents" type="button" value="Plot Accidents">
+      <input id="Construction" type="button" value="Plot Construction">
+      <input id="Events" type="button" value="Plot Events">
+      <input id="Clear" type="button" value="Clear Markers">
+      <br>
+    </div>
+
+<!-- The legends to help understand the markers on the map-->	
+<div id ="legends" style="position: absolute; top:1000px; left:220px">
+<p><b><u>MAP LEGENDS:</b></u>
+<img src="legend marker.jpg" style="width:390px;height:35px;">
+	</div></p>
+
+<!-- Loading the map-->
+<div style="position: absolute; top:350px; left:100px">
+	  <div id="map"></div>
+	  <style>	
+#map 
+      {
+        width: 900px;
+        height: 650px;
+		background-color: #CCC;
+      }
+	  </style>
+	  
+	  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApUGdIzXiSr5bUX45d-P01gKVGA-9jiKg&signed_in=true&callback=initialize"></script>
+	  <script> 
+
+	  // Arrays for Congestion and Accidents
+	  var longitudearray = <?php echo json_encode($longitude) ?>;
+	  var latitudearray = <?php echo json_encode($latitude) ?>;
+	  var description = <?php echo json_encode($description) ?>;
+
+	  // Arrays for Construction
+	  
+	  var conslongitudearray = <?php echo json_encode($conslongitude) ?>;
+	  var conslatitudearray = <?php echo json_encode($conslatitude) ?>;
+	  var consdescription = <?php echo json_encode($consdescription) ?>;
+	  
+	  // Arrays for Special Events
+	  var eventlongitudearray = <?php echo json_encode($eventlongitude) ?>;
+	  var eventlatitudearray = <?php echo json_encode($eventlatitude) ?>;
+	  var eventdescription = <?php echo json_encode($eventdescription) ?>;
+	  
+
+	  var coordinates = [];
+	  var conscoordinates = [];
+	  var eventcoordinates = [];
+
+	  
+	  var incidentmarkers = [];
+	  var consmarkers = [];
+	  var eventmarkers = [];
+
+	  // Create Objects Empty array (Traffic and Congestion Data Points) of object before populating
+	  for (var i = 0; i < longitudearray.length; i++)
+	  {
+	  	coordinates.push({});
+	  }
+
+	  // Create Objects Empty array (Construction Data Points) of object before populating
+	  for (var i = 0; i < conslongitudearray.length; i++)
+	  {
+	  	conscoordinates.push({});
+	  }
+
+	  // Create Objects Empty array (Events Data Points) of object before populating
+
+	  for (var i = 0; i < eventlongitudearray.length; i++)
+	  {
+	  	eventcoordinates.push({});
+	  }
+
+	  
+      // Populate the object array with individual data points form the single arrays
+      
+	  for( var j = 0; j < longitudearray.length; j++)
+	  {
+	  	coordinates[j].lat = latitudearray[j];
+	  	coordinates[j].lng = longitudearray[j];
+	  }
+
+	  for( var j = 0; j < conslongitudearray.length; j++)
+	  {
+	  	conscoordinates[j].lat = conslatitudearray[j];
+	  	conscoordinates[j].lng = conslongitudearray[j];
+	  }
+
+	  for( var j = 0; j < eventlongitudearray.length; j++)
+	  {
+	  	eventcoordinates[j].lat = eventlatitudearray[j];
+	  	eventcoordinates[j].lng = eventlongitudearray[j];
+	  }
+	  
+	  function initialize() 
+	  {
+		  var myLatLng = {lat: 40.4867, lng: -74.444};
+		  var map = new google.maps.Map(document.getElementById('map'), {zoom: 12,center: new google.maps.LatLng(myLatLng.lat, myLatLng.lng),mapTypeId: google.maps.MapTypeId.ROADMAP});
+		  var geocoder = new google.maps.Geocoder();
+
+		  document.getElementById('submit').addEventListener('click', function() {geocodeAddress(geocoder, map);});
+
+		  document.getElementById('Accidents').addEventListener('click', function() {drawmarkers(map);});
+
+		  document.getElementById('Construction').addEventListener('click', function() {drawconsmarkers(map);});
+
+		  document.getElementById('Events').addEventListener('click', function() {draweventmarkers(map);});
+
+		  document.getElementById('Clear').addEventListener('click', function() {clearmarkers();});
+
+
+		  //drawmarkers(map);
+  
+	   }
+
+		function geocodeAddress(geocoder, resultsMap) 
+		{
+		  var address = document.getElementById('address').value;
+		  geocoder.geocode({'address': address}, function(results, status) {
+		    if (status === google.maps.GeocoderStatus.OK) 
+		    {
+		      resultsMap.setCenter(results[0].geometry.location);
+		      var marker = new google.maps.Marker({map: resultsMap,position: results[0].geometry.location});
+		    } 
+		    else 
+		    {
+		      alert('Geocode was not successful for the following reason: ' + status);
+		    }
+		  });
+		}
+
+		function clearmarkers(map)
+		{
+			toggleMarkers();
+			toggleConsMarkers();
+			toggleEventMarkers();
+
+		}
+
+		  function drawmarkers(map)
+		  { 
+			  //toggleEventMarkers();
+			  //toggleConsMarkers();
+			  for(var j = 0; j< coordinates.length ; j++)
+			  {
+					
+				 markernew = new google.maps.Marker({
+				    map: map,
+					position: new google.maps.LatLng(coordinates[j].lat,coordinates[j].lng),
+					title: description[j],
+					icon: 'caraccident.png',
+					animation: google.maps.Animation.DROP
+	   			});
+
+				 var content = description[j];   
+                 var infowindow = new google.maps.InfoWindow();
+
+				google.maps.event.addListener(markernew,'click', (function(markernew,content,infowindow){ 
+				        return function() {
+				           infowindow.setContent(content);
+				           infowindow.open(map,markernew);
+				        };
+				    })(markernew,content,infowindow)); 
+
+	   			incidentmarkers.push(markernew);
+
+			  }
+
+			  markernew.setMap(map);
+		  }
+
+		  function drawconsmarkers(map)
+		  {  
+			  //toggleMarkers();
+			  //toggleEventMarkers();
+
+			  for(var j = 0; j< conscoordinates.length ; j++)
+			  {
+					
+				consmarkernew = new google.maps.Marker({
+				    map: map,
+					position: new google.maps.LatLng(conscoordinates[j].lat,conscoordinates[j].lng),
+					title: consdescription[j],
+					icon: 'construction.png',
+					animation: google.maps.Animation.DROP
+	   			});
+
+				var content = consdescription[j];   
+                var infowindow = new google.maps.InfoWindow();
+
+				google.maps.event.addListener(consmarkernew,'click', (function(consmarkernew,content,infowindow){ 
+				        return function() {
+				           infowindow.setContent(content);
+				           infowindow.open(map,consmarkernew);
+				        };
+				    })(consmarkernew,content,infowindow)); 
+	   			
+
+	   			consmarkers.push(consmarkernew);
+
+			  }
+
+			  consmarkernew.setMap(map);
+		  }
+
+		  function draweventmarkers(map)
+		  {  
+			 //toggleMarkers();
+			 //toggleConsMarkers();
+			  for(var j = 0; j< eventcoordinates.length ; j++)
+			  {
+					
+				markernew = new google.maps.Marker({
+				    map: map,
+					position: new google.maps.LatLng(eventcoordinates[j].lat,eventcoordinates[j].lng),
+					title: eventdescription[j],
+					icon: 'caution.png',
+					animation: google.maps.Animation.DROP
+	   			});
+
+				var content = eventdescription[j];   
+                var infowindow = new google.maps.InfoWindow();
+
+				google.maps.event.addListener(markernew,'click', (function(markernew,content,infowindow){ 
+				        return function() {
+				           infowindow.setContent(content);
+				           infowindow.open(map,markernew);
+				        };
+				    })(markernew,content,infowindow)); 
+	   			
+
+	   			eventmarkers.push(markernew);
+
+			  }
+
+			  markernew.setMap(map);
+		  }
+
+		  function toggleMarkers() {
+			  for (i = 0; i < incidentmarkers.length; i++) {
+			    if (incidentmarkers[i].getMap() != null) incidentmarkers[i].setMap(null);
+			    else incidentmarkers[i].setMap(map);
+			  }
+			}
+
+		  function toggleConsMarkers() {
+			  for (i = 0; i < consmarkers.length; i++) {
+			    if (consmarkers[i].getMap() != null) consmarkers[i].setMap(null);
+			    else consmarkers[i].setMap(map);
+			  }
+			}
+
+		  function toggleEventMarkers() {
+			  for (i = 0; i < eventmarkers.length; i++) {
+			    if (eventmarkers[i].getMap() != null) eventmarkers[i].setMap(null);
+			    else eventmarkers[i].setMap(map);
+			  }
+			}
+      
+      google.maps.event.addDomListener(window, 'load', initialize);
+      
+	  </script>
+    </div>
+</DIV>  	
+  
+	</div>
+	
+<!-- Creating a footer with group number -->
+	<DIV style="position: absolute; top:1080px">
+	<footer> 
+	&copy 2015 Group 7
+	</footer>
+	</DIV>
+</div>
+
+</body>
+
+	
+</html>

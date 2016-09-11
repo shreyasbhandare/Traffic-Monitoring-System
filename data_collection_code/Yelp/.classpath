@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="C:/Users/pateku1/Downloads/Yelp/Yelp/scribe-1.3.0.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pateku1/Downloads/Yelp/Yelp/json-simple-1.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pateku1/Downloads/Yelp/Yelp/jcommander-1.35.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pateku1/Downloads/Yelp/Yelp/java-json-schema.jar"/>
+	<classpathentry kind="lib" path="C:/Users/pateku1/Downloads/Yelp/Yelp/commons-codec-1.4.jar"/>
+	<classpathentry kind="lib" path="mysql-connector-java-5.1.18-bin.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
